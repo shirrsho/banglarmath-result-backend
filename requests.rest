@@ -1,0 +1,23 @@
+GET http://localhost:3001/
+
+###
+POST http://localhost:3001/uploadresultsheet HTTP/1.1
+Content-Type: application/json
+
+[
+  {
+  "Name":"Shirsho",
+  "id":"djahs"
+  }
+]
+
+###
+
+POST http://localhost:3001/questiontags HTTP/1.1
+Content-Type: application/json
+
+[
+    {"Q1": {"Name":"Shirsho","id":"djahs"}},
+    {"Q2": {"Name":"asDrsho","id":"djahs"}},
+    {"Q3": {"Name":"ShirFASEDFo","id":"djahs"}}
+]
