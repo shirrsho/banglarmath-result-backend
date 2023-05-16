@@ -21,3 +21,7 @@ Content-Type: application/json
     {"Q2": {"Name":"asDrsho","id":"djahs"}},
     {"Q3": {"Name":"ShirFASEDFo","id":"djahs"}}
 ]
+
+###
+
+GET http://localhost:3001/result/ALM22J157/
