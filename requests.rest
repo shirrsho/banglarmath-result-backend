@@ -24,4 +24,4 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3001/result/ALM22J157/
+GET http://localhost:3001/result/ALM22J157/13

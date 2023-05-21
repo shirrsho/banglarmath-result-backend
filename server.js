@@ -9,7 +9,8 @@ app.use(cors())
 
 var resultsheet = [];
 var tags;
-var n_ques = 0;
+var nques = 0;
+var student_name = "";
 
 app.get('/',(req, res) => {
     res.send("Hello Banglarmath!");
@@ -18,12 +19,11 @@ app.get('/',(req, res) => {
 
 import { calculateRightPercentage, calculateBlankPercentage } from './resultcal.js';
 
-app.get('/result/:n_ques/:student_id',(req, res) => {
+app.get('/result/:student_id',(req, res) => {
     const student_id = req.params.student_id;
-    n_ques = req.params.n_ques;
-
+    student_name = resultsheet.find((result)=>result.Id===student_id).Name
     let newresult = [];
-    for(let i = 1 ; i <= n_ques ; i++){
+    for(let i = 1 ; i <= nques ; i++){
         let qnum = "Q"+i;
         newresult.push({
             Question: qnum,
@@ -34,26 +34,19 @@ app.get('/result/:n_ques/:student_id',(req, res) => {
             Blank:calculateBlankPercentage(resultsheet,qnum)
         })
     }
-    res.send(newresult);
+    res.send({
+        studentresult:newresult,
+        Name:student_name
+    });
 });
 
 app.post('/uploadresultsheet', (req, res) => {
-    resultsheet = req.body;
-    console.log('Received post resultsheet:');
+    resultsheet = req.body.resultsheet;
+    nques = req.body.nques;
+    tags = req.body.tags;
+    console.log('Received post resultsheet: ', resultsheet);
+
     res.send('Sheet Received');
-})
-
-app.post('/uploadquestioninfo', (req, res) => {
-    // console.log("post");
-    let data = req.body;
-    console.log('Received post qinfo:', data);
-    res.send('Ques Received');
-})
-
-app.post('/questiontags', (req, res) => {
-    tags = req.body;
-    console.log('Received post tags:');
-    res.send('Tags Received');
 })
 
 app.listen(3001,()=>{
