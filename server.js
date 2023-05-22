@@ -2,11 +2,13 @@ import express from 'express'
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose'
 import cors from 'cors'
+import { connectDB, getData, saveData } from './database/db.js'
 
 const app = express();
 app.use(bodyParser.json())
 app.use(cors())
 
+var examinformation = {};
 var resultsheet = [];
 var criterias;
 var tags;
@@ -42,11 +44,18 @@ app.get('/result/:student_id',(req, res) => {
 });
 
 app.post('/uploadresultsheet', (req, res) => {
-    resultsheet = req.body.resultsheet;
-    nques = req.body.nques;
-    tags = req.body.tags;
-    console.log('Received post resultsheet: ', resultsheet);
-
+    examinformation = {
+        examcode : req.body.examcode,
+        examname : req.body.examname,
+        nques : req.body.nqes,
+        resultsheet : req.body.resultsheet,
+        tags : req.body.tags,
+    }
+    // resultsheet = req.body.resultsheet;
+    // nques = req.body.nques;
+    // tags = req.body.tags;
+    console.log('Received post resultsheet: ', examinformation);
+    saveData(examinformation);
     res.send('Sheet Received');
 })
 
@@ -60,3 +69,5 @@ app.post('/uploadjudgingcriteria', (req, res) => {
 app.listen(3001,()=>{
     console.log("server started, listening on port 3001");
 })
+
+connectDB();
