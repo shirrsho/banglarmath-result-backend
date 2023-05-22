@@ -8,6 +8,7 @@ app.use(bodyParser.json())
 app.use(cors())
 
 var resultsheet = [];
+var criterias;
 var tags;
 var nques = 0;
 var student_name = "";
@@ -47,6 +48,13 @@ app.post('/uploadresultsheet', (req, res) => {
     console.log('Received post resultsheet: ', resultsheet);
 
     res.send('Sheet Received');
+})
+
+app.post('/uploadjudgingcriteria', (req, res) => {
+    let data = req.body;
+    console.log('Received post criterias: ', data);
+
+    res.send('Criterias Received');
 })
 
 app.listen(3001,()=>{
