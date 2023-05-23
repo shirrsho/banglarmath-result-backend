@@ -2,18 +2,14 @@ import express from 'express'
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose'
 import cors from 'cors'
-import { connectDB, getData, saveData } from './database/db.js'
+import { connectDB, getExamintroData, getResultsheetData, saveExamIntroData, saveResultsheetData } from './database/db.js'
 
 const app = express();
 app.use(bodyParser.json())
 app.use(cors())
 
-var examinformation = {};
-var resultsheet = [];
+var examintro = {};
 var criterias;
-var tags;
-var nques = 0;
-var student_name = "";
 
 app.get('/',(req, res) => {
     res.send("Hello Banglarmath!");
@@ -22,40 +18,47 @@ app.get('/',(req, res) => {
 
 import { calculateRightPercentage, calculateBlankPercentage } from './resultcal.js';
 
-app.get('/result/:student_id',(req, res) => {
+app.get('/result/:examcode/:student_id', async (req, res) => {
     const student_id = req.params.student_id;
-    student_name = resultsheet.find((result)=>result.Id===student_id).Name
+    const examcode = req.params.examcode;
     let newresult = [];
-    for(let i = 1 ; i <= nques ; i++){
-        let qnum = "Q"+i;
-        newresult.push({
-            Question: qnum,
-            QuestionType: tags[qnum]?.types,
-            YourAnswer: resultsheet.find((result)=>result.Id===student_id)[qnum],
-            Correct: calculateRightPercentage(resultsheet,qnum),
-            Wrong: 100-calculateRightPercentage(resultsheet,qnum),
-            Blank:calculateBlankPercentage(resultsheet,qnum)
-        })
+    let result;
+    try{
+        const examinformation = await getExamintroData(examcode);
+        result = await getResultsheetData(examcode, student_id);
+        console.log("intry:",result);
+        for(let i = 1 ; i <= examinformation?.nques ; i++){
+            let qnum = "Q"+i;
+            newresult.push({
+                Id: result.Id,
+                Name: result.Name,
+                Question: qnum,
+                QuestionType: examinformation.tags[qnum]?.types,
+                YourAnswer: result[qnum],
+            })
+        }
+    } catch {
+        console.error('Failed to fetch data', error);
     }
+    console.log("baire",result);
     res.send({
-        studentresult:newresult,
-        Name:student_name
+        studentresult:result
     });
 });
 
 app.post('/uploadresultsheet', (req, res) => {
-    examinformation = {
+    examintro = {
         examcode : req.body.examcode,
         examname : req.body.examname,
-        nques : req.body.nqes,
-        resultsheet : req.body.resultsheet,
+        nques : parseInt(req.body.nques),
         tags : req.body.tags,
     }
     // resultsheet = req.body.resultsheet;
     // nques = req.body.nques;
     // tags = req.body.tags;
-    console.log('Received post resultsheet: ', examinformation);
-    saveData(examinformation);
+    console.log('Received post resultsheet: ', examintro);
+    if(saveExamIntroData(examintro))
+        saveResultsheetData(examintro.examcode, req.body.resultsheet);
     res.send('Sheet Received');
 })
 
