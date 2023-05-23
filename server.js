@@ -1,6 +1,5 @@
 import express from 'express'
 import bodyParser from 'body-parser';
-import mongoose from 'mongoose'
 import cors from 'cors'
 import { connectDB, getExamintroData, getResultsheetData, saveExamIntroData, saveResultsheetData } from './database/db.js'
 
@@ -16,33 +15,32 @@ app.get('/',(req, res) => {
 });
 
 
-import { calculateRightPercentage, calculateBlankPercentage } from './resultcal.js';
-
 app.get('/result/:examcode/:student_id', async (req, res) => {
     const student_id = req.params.student_id;
     const examcode = req.params.examcode;
     let newresult = [];
     let result;
+    let examinformation;
     try{
-        const examinformation = await getExamintroData(examcode);
+        examinformation = await getExamintroData(examcode);
         result = await getResultsheetData(examcode, student_id);
-        console.log("intry:",result);
+        
         for(let i = 1 ; i <= examinformation?.nques ; i++){
             let qnum = "Q"+i;
             newresult.push({
                 Id: result.Id,
                 Name: result.Name,
                 Question: qnum,
-                QuestionType: examinformation.tags[qnum]?.types,
-                YourAnswer: result[qnum],
+                QuestionType: examinformation.tags.find(tag=>tag.id===i)?.types,
+                YourAnswer: result[qnum]
             })
         }
-    } catch {
+    } catch(error) {
         console.error('Failed to fetch data', error);
     }
-    console.log("baire",result);
+    console.log(examinformation.tags.find(tag=>tag.id===1).types);
     res.send({
-        studentresult:result
+        studentresult:newresult
     });
 });
 
@@ -51,7 +49,7 @@ app.post('/uploadresultsheet', (req, res) => {
         examcode : req.body.examcode,
         examname : req.body.examname,
         nques : parseInt(req.body.nques),
-        tags : req.body.tags,
+        tags : req.body.tags
     }
     // resultsheet = req.body.resultsheet;
     // nques = req.body.nques;
