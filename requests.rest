@@ -25,3 +25,7 @@ Content-Type: application/json
 ###
 
 GET http://localhost:3001/result/BME5/ALM22J151/
+
+###
+
+GET http://localhost:3001/exams

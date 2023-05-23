@@ -5,6 +5,9 @@ import { ExamIntro } from "./models/examintro.js";
 let ResultsheetSchema = new mongoose.Schema({}, { strict: false });
 const Resultsheet = mongoose.model('Resultsheet', ResultsheetSchema);
 
+let CriteriaSchema = new mongoose.Schema({}, { strict: false });
+const Criteria = mongoose.model('Criteria', CriteriaSchema);
+
 function convertToSize12(str) {
   let hash = 0;
   if (str.length === 0) {
@@ -40,7 +43,7 @@ export const saveExamIntroData = async (data) => {
     }
   };
 
-  export const saveEachStudentsResultsheetData = async (examcode, data) => {
+  const saveEachStudentsResultsheetData = async (examcode, data) => {
     try {
       data._id = convertToSize12(examcode+data.Id);
       await Resultsheet.create(data);
@@ -52,9 +55,29 @@ export const saveExamIntroData = async (data) => {
 
   export const saveResultsheetData = async (examcode, data) => {
     try {
-    data.forEach(async element => {
-      await saveEachStudentsResultsheetData(examcode, element)
-    });
+      data.forEach(async element => {
+        await saveEachStudentsResultsheetData(examcode, element)
+      });
+    } catch (error) {
+      console.error('Failed to save data', error);
+    }
+  };
+
+  const saveEachQuestionsCriteriaData = async (examcode, data) => {
+    try {
+      data._id = convertToSize12(examcode);
+      await Criteria.create(data);
+      console.log('Criteria saved');
+    } catch (errors) {
+      console.error('Failed to save criteria', errors.reason);
+    }
+  };
+
+  export const saveCriteriaData = async (data) => {
+    try {
+      data.criterias.forEach(async element => {
+        await saveEachQuestionsCriteriaData(data.examcode, element)
+      });
     } catch (error) {
       console.error('Failed to save data', error);
     }
@@ -78,4 +101,14 @@ export const saveExamIntroData = async (data) => {
       console.error('Failed to fetch data', error);
       return [];
     }
+  }
+
+    export const getAllExamintroData = async () => {
+      try {
+        return await ExamIntro.find();
+        // console.log(result);
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+        return [];
+      }
   };

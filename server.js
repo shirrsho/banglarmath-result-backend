@@ -1,7 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser';
 import cors from 'cors'
-import { connectDB, getExamintroData, getResultsheetData, saveExamIntroData, saveResultsheetData } from './database/db.js'
+import { connectDB, getAllExamintroData, getExamintroData, getResultsheetData, saveCriteriaData, saveExamIntroData, saveResultsheetData } from './database/db.js'
 
 const app = express();
 app.use(bodyParser.json())
@@ -38,10 +38,24 @@ app.get('/result/:examcode/:student_id', async (req, res) => {
     } catch(error) {
         console.error('Failed to fetch data', error);
     }
-    console.log(examinformation.tags.find(tag=>tag.id===1).types);
+    // console.log(examinformation.tags.find(tag=>tag.id===1)?.types);
     res.send({
         studentresult:newresult
     });
+});
+
+app.get('/exams', async (req, res) => {
+    const intros = await getAllExamintroData();
+    let infos = [];
+    intros.forEach(intro=>{
+        infos.push({
+            examcode:intro.examcode,
+            examname: intro.examname
+        })
+    })
+    res.send({
+        infos:infos
+    })
 });
 
 app.post('/uploadresultsheet', (req, res) => {
@@ -62,8 +76,8 @@ app.post('/uploadresultsheet', (req, res) => {
 
 app.post('/uploadjudgingcriteria', (req, res) => {
     let data = req.body;
-    console.log('Received post criterias: ', data);
-
+    console.log('Received post criterias: ');
+    saveCriteriaData(data)
     res.send('Criterias Received');
 })
 
