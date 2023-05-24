@@ -1,12 +1,12 @@
 // db.js
 import mongoose from "mongoose";
-import { ExamIntro } from "./models/examintro.js";
+import { ExamIntro, Criteria } from "./models/examintro.js";
 
 let ResultsheetSchema = new mongoose.Schema({}, { strict: false });
 const Resultsheet = mongoose.model('Resultsheet', ResultsheetSchema);
 
-let CriteriaSchema = new mongoose.Schema({}, { strict: false });
-const Criteria = mongoose.model('Criteria', CriteriaSchema);
+// let CriteriaSchema = new mongoose.Schema({}, { strict: false });
+// const Criteria = mongoose.model('Criteria', CriteriaSchema);
 
 function convertToSize12(str) {
   let hash = 0;
@@ -75,11 +75,20 @@ export const saveExamIntroData = async (data) => {
 
   export const saveCriteriaData = async (data) => {
     try {
-      data.criterias.forEach(async element => {
-        await saveEachQuestionsCriteriaData(data.examcode, element)
-      });
+      data._id = convertToSize12(data.examcode);
+      await Criteria.create(data);
     } catch (error) {
       console.error('Failed to save data', error);
+    }
+  };
+
+  export const getCriteriaData = async (examcode) => {
+    try {
+      return await Criteria.findById(convertToSize12(examcode));
+      // console.log(result);
+    } catch (error) {
+      console.error('Failed to fetch data', error);
+      return [];
     }
   };
   

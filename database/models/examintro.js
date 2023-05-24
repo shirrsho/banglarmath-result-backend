@@ -13,6 +13,13 @@ const TagSchema = new mongoose.Schema({
   types: [String]
 })
 
+const AssesmentSchema = new mongoose.Schema({
+  type:String,
+  segment:String,
+  furnishThreshold:Number,
+  learnThreshold:Number
+})
+
 const ExamIntroSchema = new mongoose.Schema({
   examcode:String,
   examname: String,
@@ -20,4 +27,10 @@ const ExamIntroSchema = new mongoose.Schema({
   tags: [TagSchema]
 })
 
+const CriteriaSchema = new mongoose.Schema({
+  examcode:String,
+  criterias:[AssesmentSchema]
+})
+
 export const ExamIntro = mongoose.model('ExamIntro', ExamIntroSchema);
+export const Criteria = mongoose.model('Criteria', CriteriaSchema);

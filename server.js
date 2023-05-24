@@ -1,14 +1,14 @@
 import express from 'express'
 import bodyParser from 'body-parser';
 import cors from 'cors'
-import { connectDB, getAllExamintroData, getExamintroData, getResultsheetData, saveCriteriaData, saveExamIntroData, saveResultsheetData } from './database/db.js'
+import { connectDB, getAllExamintroData, getCriteriaData, getExamintroData, getResultsheetData, saveCriteriaData, saveExamIntroData, saveResultsheetData } from './database/db.js'
+import { setAssesment } from './resultcal.js';
 
 const app = express();
 app.use(bodyParser.json())
 app.use(cors())
 
 var examintro = {};
-var criterias;
 
 app.get('/',(req, res) => {
     res.send("Hello Banglarmath!");
@@ -18,29 +18,71 @@ app.get('/',(req, res) => {
 app.get('/result/:examcode/:student_id', async (req, res) => {
     const student_id = req.params.student_id;
     const examcode = req.params.examcode;
-    let newresult = [];
+    let answers = [];
+    let criterias = [];
     let result;
     let examinformation;
+    let assesments = [];
+    /*studentresultsheet = {
+        studentId:
+        studentName:
+        school:
+        medium:
+        class:
+        answers:[]
+        assesments:[{
+            type:
+            segment:
+            status:
+        }]
+    }*/
     try{
         examinformation = await getExamintroData(examcode);
         result = await getResultsheetData(examcode, student_id);
+        criterias = await getCriteriaData(examcode);
         
         for(let i = 1 ; i <= examinformation?.nques ; i++){
             let qnum = "Q"+i;
-            newresult.push({
-                Id: result.Id,
-                Name: result.Name,
+            answers.push({
+                // Id: result.Id,
+                // Name: result.Name,
                 Question: qnum,
+                QuestionSegment: examinformation.tags.find(tag=>tag.id===i)?.segments,
                 QuestionType: examinformation.tags.find(tag=>tag.id===i)?.types,
                 YourAnswer: result[qnum]
             })
         }
+
+        criterias.criterias.forEach(criteria=>{
+            assesments.push(setAssesment(criteria, answers));
+        })
+        // console.log(assesments);
     } catch(error) {
         console.error('Failed to fetch data', error);
     }
     // console.log(examinformation.tags.find(tag=>tag.id===1)?.types);
+    /*studentresultsheet = {
+        studentId:
+        studentName:
+        school:
+        medium:
+        class:
+        answers:[]
+        assesments:[{
+            type:
+            segment:
+            status:
+        }]
+    }*/
     res.send({
-        studentresult:newresult
+        studentId:result.Id,
+        studentName:result.Name,
+        school: result.School,
+        // medium: result["Medium"]
+        class: result.Class,
+        answers:answers,
+        criterias:criterias.criterias,
+        assesments:assesments
     });
 });
 
@@ -76,7 +118,7 @@ app.post('/uploadresultsheet', (req, res) => {
 
 app.post('/uploadjudgingcriteria', (req, res) => {
     let data = req.body;
-    console.log('Received post criterias: ');
+    console.log('Received post criterias: ',data);
     saveCriteriaData(data)
     res.send('Criterias Received');
 })
